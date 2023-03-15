@@ -11,7 +11,7 @@ namespace Sales.API.Controllers
     public class CountriesController : ControllerBase
     {
         private readonly DataContext _context;
-        public CountriesController(DataContext context) 
+        public CountriesController(DataContext context)
         {
             _context = context;
         }
@@ -19,23 +19,37 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
-           // var queryable = _context.Countries
-           //     .Include(x => x.States)
-           //     .AsQueryable();
+            // var queryable = _context.Countries
+            //     .Include(x => x.States)
+            //     .AsQueryable();
 
-           // if (!string.IsNullOrWhiteSpace(pagination.Filter))
-           // {
-           //     queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
-           // }
+            // if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            // {
+            //     queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            // }
 
             //return Ok(await queryable
             //    .OrderBy(x => x.Name)
             //    .Paginate(pagination)
-             //   .ToListAsync());
+            //   .ToListAsync());
 
-            return Ok(await _context.Countries.ToListAsync());
+            return Ok(await _context.Countries
+                .Include(x => x.States)
+                .ToListAsync());
 
         }
+
+
+        [HttpGet("full")]
+        public async Task<IActionResult> GetFullAsync()
+        {
+            return Ok(await _context.Countries
+                .Include(x => x.States!)
+                .ThenInclude(x => x.Cities)
+                .ToListAsync());
+
+        }
+
 
 
         [HttpPost]
