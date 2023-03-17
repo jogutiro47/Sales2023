@@ -30,10 +30,11 @@
                             @country.StatesNumber
                         </td>
                         <td>
-                            <a href="/countries/edit/@country.Id" class="btn btn-warning">Editar</a>
+                            <a class="btn btn-info" href="/countries/details/@country.Id">Detalles</a>
+                            <a class="btn btn-warning" href="/countries/edit/@country.Id">Editar</a>
                             <button class="btn btn-danger" @onclick=@(() => Delete(country))>Borrar</button>
                         </td>
-                       
+                      
                     </tr>   
                 }
             </tbody>

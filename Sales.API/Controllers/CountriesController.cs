@@ -50,7 +50,20 @@ namespace Sales.API.Controllers
 
         }
 
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetAsync(int id)
+        {
+            var country = await _context.Countries
+                .Include(x => x.States!)
+                .ThenInclude(x => x.Cities)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (country == null)
+            {
+                return NotFound();
+            }
 
+            return Ok(country);
+        }
 
         [HttpPost]
         public async Task<ActionResult> PostAsync(Country country)
@@ -76,19 +89,6 @@ namespace Sales.API.Controllers
             }
         }
 
-        //Editar Registro Buscar
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetAsync(int id)
-        {
-            var country = await _context.Countries
-               .FirstOrDefaultAsync(x => x.Id == id);
-            if (country == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(country);
-        }
 
         [HttpPut]
         public async Task<ActionResult> PutAsync(Country country)
