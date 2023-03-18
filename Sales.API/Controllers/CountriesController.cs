@@ -1,44 +1,65 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Sales.API.Data;
+using Sales.API.Helpers;
+using Sales.Shared.DTOs;
 using Sales.Shared.Entities;
 using System.Linq;
 
 namespace Sales.API.Controllers
 {
     [ApiController]
+   
     [Route("/api/countries")]
     public class CountriesController : ControllerBase
     {
         private readonly DataContext _context;
+
         public CountriesController(DataContext context)
         {
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAsync()
+        [AllowAnonymous]
+        [HttpGet("combo")]
+        public async Task<ActionResult> GetCombo()
         {
-            // var queryable = _context.Countries
-            //     .Include(x => x.States)
-            //     .AsQueryable();
-
-            // if (!string.IsNullOrWhiteSpace(pagination.Filter))
-            // {
-            //     queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
-            // }
-
-            //return Ok(await queryable
-            //    .OrderBy(x => x.Name)
-            //    .Paginate(pagination)
-            //   .ToListAsync());
-
-            return Ok(await _context.Countries
-                .Include(x => x.States)
-                .ToListAsync());
-
+            return Ok(await _context.Countries.ToListAsync());
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAsync([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.Countries
+                .Include(x => x.States)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
+            return Ok(await queryable
+                .OrderBy(x => x.Name)
+                .Paginate(pagination)
+                .ToListAsync());
+        }
+
+        [HttpGet("totalPages")]
+        public async Task<ActionResult> GetPages([FromQuery] PaginationDTO pagination)
+        {
+            var queryable = _context.Countries.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(pagination.Filter))
+            {
+                queryable = queryable.Where(x => x.Name.ToLower().Contains(pagination.Filter.ToLower()));
+            }
+
+            double count = await queryable.CountAsync();
+            double totalPages = Math.Ceiling(count / pagination.RecordsNumber);
+            return Ok(totalPages);
+        }
 
         [HttpGet("full")]
         public async Task<IActionResult> GetFullAsync()
@@ -47,7 +68,6 @@ namespace Sales.API.Controllers
                 .Include(x => x.States!)
                 .ThenInclude(x => x.Cities)
                 .ToListAsync());
-
         }
 
         [HttpGet("{id:int}")]
@@ -89,7 +109,6 @@ namespace Sales.API.Controllers
             }
         }
 
-
         [HttpPut]
         public async Task<ActionResult> PutAsync(Country country)
         {
@@ -114,8 +133,6 @@ namespace Sales.API.Controllers
             }
         }
 
-        //Borrar Pais
-
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteAsync(int id)
         {
@@ -129,6 +146,7 @@ namespace Sales.API.Controllers
             await _context.SaveChangesAsync();
             return NoContent();
         }
-
     }
+
+
 }
